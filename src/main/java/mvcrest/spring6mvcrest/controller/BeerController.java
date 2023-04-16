@@ -4,10 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mvcrest.spring6mvcrest.model.Beer;
 import mvcrest.spring6mvcrest.service.BeerService;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,5 +29,17 @@ public class BeerController {
         log.debug("Controller debug beerId: " + id);
 
         return beerService.getBeerById(id);
+    }
+
+    @PostMapping
+    public ResponseEntity<Beer> handleBeerPost(@RequestBody Beer beerPost){
+
+        Beer beerSaved = beerService.savedNewBeer(beerPost);
+
+        var headers = new HttpHeaders();
+
+        headers.add("location", "/api/v1/beers/" + beerSaved.getId().toString());
+
+        return new ResponseEntity<>( headers, HttpStatus.CREATED);
     }
 }

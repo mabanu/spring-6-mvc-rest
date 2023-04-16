@@ -4,10 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mvcrest.spring6mvcrest.model.Customer;
 import mvcrest.spring6mvcrest.service.CustomerService;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,4 +33,17 @@ public class CustomerController {
 
         return customerService.getCustomerById(customerID);
     }
+
+    @PostMapping
+    public ResponseEntity<Customer> handlePostCustomer(@RequestBody Customer customerPost){
+
+        Customer customerSaved = customerService.savedNewCustomer(customerPost);
+
+        var header = new HttpHeaders();
+        header.add("location", "/api/v1/customers/" + customerSaved.getId().toString());
+
+        return new ResponseEntity<>(customerSaved, header, HttpStatus.CREATED);
+    }
+
+
 }

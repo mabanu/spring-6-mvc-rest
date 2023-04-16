@@ -70,4 +70,23 @@ public class BeerServiceImpl implements BeerService {
 
         return beerMap.get(id);
     }
+
+    @Override
+    public Beer savedNewBeer(Beer beer) {
+        var beerSaved = Beer.builder()
+                .id(UUID.randomUUID())
+                .beerName(beer.getBeerName())
+                .beerStyle(beer.getBeerStyle())
+                .version(beer.getVersion())
+                .upc(beer.getUpc())
+                .price(beer.getPrice())
+                .quantityOnHand(beer.getQuantityOnHand())
+                .createdDate(LocalDateTime.now())
+                .UpdateDate(LocalDateTime.now())
+                .build();
+
+        beerMap.put(beerSaved.getId(), beerSaved);
+
+        return beerSaved;
+    }
 }
