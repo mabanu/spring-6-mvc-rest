@@ -1,6 +1,6 @@
 package mvcrest.spring6mvcrest.controller;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mvcrest.spring6mvcrest.model.Customer;
 import mvcrest.spring6mvcrest.service.CustomerService;
@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/customers")
 public class CustomerController {
 
@@ -45,5 +45,27 @@ public class CustomerController {
         return new ResponseEntity<>(customerSaved, header, HttpStatus.CREATED);
     }
 
+    @PutMapping("{id}")
+    public ResponseEntity<Customer> handlerPutCustomer(@PathVariable("id") UUID id, @RequestBody Customer customer) {
 
+        customerService.updateCustomer(id, customer);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PatchMapping("{id}")
+    public ResponseEntity<Customer> handlerPatchCustomer(@PathVariable("id") UUID id, @RequestBody Customer customer) {
+
+        customerService.patchCustomer(id, customer);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<Customer> handlerDeleteCustomer(@PathVariable("id") UUID id) {
+
+        customerService.deleteCustomer(id);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

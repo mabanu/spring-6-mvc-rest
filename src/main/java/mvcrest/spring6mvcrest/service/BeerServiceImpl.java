@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import mvcrest.spring6mvcrest.model.Beer;
 import mvcrest.spring6mvcrest.model.BeerStyle;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -60,7 +61,7 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public List<Beer> listBeer(){
+    public List<Beer> listBeer() {
         return new ArrayList<>(beerMap.values());
     }
 
@@ -91,7 +92,7 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public Beer beerUpdate(UUID id, Beer beer) {
+    public void beerUpdate(UUID id, Beer beer) {
         var beerUpdate = beerMap.get(id);
 
         beerUpdate.setBeerName(beer.getBeerName());
@@ -102,7 +103,44 @@ public class BeerServiceImpl implements BeerService {
         beerUpdate.setUpc(beer.getUpc());
 
         beerMap.put(beerUpdate.getId(), beerUpdate);
+    }
 
-        return beerUpdate;
+    @Override
+    public void beerPatch(UUID id, Beer beer) {
+
+        var beerPatch = beerMap.get(id);
+
+        if (StringUtils.hasText(beer.getBeerName())) {
+            beerPatch.setBeerName(beer.getBeerName());
+        }
+
+        if (StringUtils.hasText(beer.getUpc())) {
+            beerPatch.setUpc(beer.getUpc());
+        }
+
+        if (beer.getBeerStyle() != null) {
+            beerPatch.setBeerStyle(beer.getBeerStyle());
+        }
+
+        if (beer.getPrice() != null) {
+            beerPatch.setPrice(beer.getPrice());
+        }
+
+        if (beer.getQuantityOnHand() != null) {
+            beerPatch.setQuantityOnHand(beer.getQuantityOnHand());
+        }
+
+        beerPatch.setUpdateDate(LocalDateTime.now());
+
+        if (beer.getPrice() != null) {
+            beerPatch.setVersion(beer.getVersion());
+        }
+
+        beerMap.put(beerPatch.getId(), beerPatch);
+    }
+
+    @Override
+    public void beerDelete(UUID id) {
+        beerMap.remove(id);
     }
 }
