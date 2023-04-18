@@ -24,21 +24,21 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @RequestMapping(value = CUSTOMER_PATH, method = RequestMethod.GET)
-    public List<Customer> getListCustomers(){
+    public List<Customer> getListCustomers() {
         log.debug("get list customers controller method call");
 
         return customerService.listCustomers();
     }
 
     @RequestMapping(value = CUSTOMER_PATH_ID, method = RequestMethod.GET)
-    public Customer getCustomerById(@PathVariable("id") UUID customerID){
+    public Customer getCustomerById(@PathVariable("id") UUID customerID) {
         log.debug("get customer by id controller method call");
 
-        return customerService.getCustomerById(customerID);
+        return customerService.getCustomerById(customerID).orElseThrow(NotFoundException::new);
     }
 
     @PostMapping(CUSTOMER_PATH)
-    public ResponseEntity<Customer> handlePostCustomer(@RequestBody Customer customerPost){
+    public ResponseEntity<Customer> handlePostCustomer(@RequestBody Customer customerPost) {
 
         Customer customerSaved = customerService.savedNewCustomer(customerPost);
 
