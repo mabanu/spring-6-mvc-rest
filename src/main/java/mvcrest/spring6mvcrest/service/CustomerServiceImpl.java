@@ -1,5 +1,6 @@
 package mvcrest.spring6mvcrest.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mvcrest.spring6mvcrest.mappers.CustomerMapper;
 import mvcrest.spring6mvcrest.model.CustomerDTO;
@@ -15,17 +16,11 @@ import java.util.UUID;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
-
-    public CustomerServiceImpl(CustomerRepository customerRepository, CustomerMapper customerMapper) {
-
-        this.customerRepository = customerRepository;
-        this.customerMapper = customerMapper;
-    }
-
 
     @Override
     public List<CustomerDTO> listCustomers() {

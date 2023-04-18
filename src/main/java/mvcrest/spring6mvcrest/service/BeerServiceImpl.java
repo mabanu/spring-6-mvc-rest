@@ -1,5 +1,6 @@
 package mvcrest.spring6mvcrest.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mvcrest.spring6mvcrest.mappers.BeerMapper;
 import mvcrest.spring6mvcrest.model.BeerDTO;
@@ -15,15 +16,11 @@ import java.util.UUID;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class BeerServiceImpl implements BeerService {
 
     private final BeerRepository beerRepository;
     private final BeerMapper beerMapper;
-
-    public BeerServiceImpl(BeerRepository beerRepository, BeerMapper beerMapper) {
-        this.beerRepository = beerRepository;
-        this.beerMapper = beerMapper;
-    }
 
     @Override
     public List<BeerDTO> listBeer() {
