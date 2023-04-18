@@ -9,10 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,48 +25,33 @@ public class BeerServiceImpl implements BeerService {
 
     @Override
     public List<BeerDTO> listBeer() {
-        var beers = beerRepository.findAll();
-        var beersDtos = new ArrayList<BeerDTO>();
-
-        for (var beer : beers) {
-            beersDtos.add(beerMapper.beerToBeerDto(beer));
-        }
-
-        return beersDtos;
+        return beerRepository.findAll()
+                .stream()
+                .map(beerMapper::beerToBeerDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Optional<BeerDTO> getBeerById(UUID id) {
         log.debug("Beer service debug beerId: " + id);
 
-        if (beerRepository.findById(id).isEmpty()) {
-            return Optional.empty();
-        }
-
-        var beer = beerRepository.findById(id).get();
-
-        var beerDto = beerMapper.beerToBeerDto(beer);
-
-        return Optional.of(beerDto);
+        return Optional.ofNullable(beerMapper
+                .beerToBeerDto(beerRepository
+                        .findById(id)
+                        .orElse(null)));
     }
 
     @Override
     public BeerDTO savedNewBeer(BeerDTO beerDTO) {
-        var beerDtoToBeer = beerMapper.beerDtoToBeer(beerDTO);
-
-        var beerSaved = beerRepository.save(beerDtoToBeer);
-
-        return beerMapper.beerToBeerDto(beerSaved);
+        return beerMapper.beerToBeerDto(beerRepository.save(beerMapper.beerDtoToBeer(beerDTO)));
     }
 
     @Override
-    public void beerUpdate(UUID id, BeerDTO beerDTO) {
+    public Optional<BeerDTO> beerUpdate(UUID id, BeerDTO beerDTO) {
 
-        var beerCheck = beerRepository.findById(id);
+        AtomicReference<Optional<BeerDTO>> atomicReference = new AtomicReference<>();
 
-        if (beerCheck.isPresent()) {
-            var beerUpdate = beerCheck.get();
-
+        beerRepository.findById(id).ifPresentOrElse(beerUpdate -> {
             beerUpdate.setBeerName(beerDTO.getBeerName());
             beerUpdate.setUpdatedDate(LocalDateTime.now());
             beerUpdate.setBeerStyle(beerDTO.getBeerStyle());
@@ -73,8 +59,12 @@ public class BeerServiceImpl implements BeerService {
             beerUpdate.setUpc(beerDTO.getUpc());
             beerUpdate.setQuantityOnHand(beerDTO.getQuantityOnHand());
 
-            beerRepository.save(beerUpdate);
-        }
+            atomicReference.set(Optional.of(beerMapper.beerToBeerDto(beerRepository.save(beerUpdate))));
+        }, () -> {
+            atomicReference.set(Optional.empty());
+        });
+
+        return atomicReference.get();
     }
 
     @Override
@@ -118,7 +108,12 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public void beerDelete(UUID id) {
-        beerRepository.deleteById(id);
+    public Boolean beerDelete(UUID id) {
+
+        if (beerRepository.existsById(id)) {
+            beerRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

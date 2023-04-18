@@ -42,7 +42,7 @@ public class BeerController {
 
         var headers = new HttpHeaders();
 
-        headers.add("location", BEER_PATH + "/" + beerDTOSaved.getId());
+        headers.add("location", BEER_PATH + "/" + beerDTOSaved.getId().toString());
 
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
@@ -50,7 +50,9 @@ public class BeerController {
     @PutMapping(BEER_PATH_ID)
     public ResponseEntity<BeerDTO> handleBeerUpdate(@PathVariable("beerId") UUID id, @RequestBody BeerDTO beerDTO) {
 
-        beerService.beerUpdate(id, beerDTO);
+        if (beerService.beerUpdate(id, beerDTO).isEmpty()) {
+            throw new NotFoundException();
+        }
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -66,8 +68,10 @@ public class BeerController {
     @DeleteMapping(BEER_PATH_ID)
     public ResponseEntity<BeerDTO> handlerBeerDelete(@PathVariable("beerId") UUID id) {
 
-        beerService.beerDelete(id);
+        if (beerService.beerDelete(id)) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
 
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        throw new NotFoundException();
     }
 }

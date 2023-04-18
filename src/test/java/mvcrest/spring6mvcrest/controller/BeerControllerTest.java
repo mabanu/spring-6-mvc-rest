@@ -114,6 +114,8 @@ class BeerControllerTest {
 
         var beerUpdate = beerTest;
 
+        given(beerService.beerUpdate(any(),any())).willReturn(Optional.of(beerUpdate));
+
         mockMvc.perform(put(BeerController.BEER_PATH_ID, beerUpdate.getId())
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -145,6 +147,8 @@ class BeerControllerTest {
     void handlerBeerDelete() throws Exception {
 
         var deleteBeer = beerTest;
+
+        given(beerService.beerDelete(any())).willReturn(true);
 
         mockMvc.perform(delete(BeerController.BEER_PATH_ID, deleteBeer.getId()))
                 .andExpect(status().isNoContent());

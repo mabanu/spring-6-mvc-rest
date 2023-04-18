@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,14 +26,10 @@ public class CustomerServiceImpl implements CustomerService {
     public List<CustomerDTO> listCustomers() {
         log.debug("customer list service call");
 
-        var customers = customerRepository.findAll();
-
-        var customerReturn = new ArrayList<CustomerDTO>();
-        for (var customer : customers) {
-            customerReturn.add(customerMapper.customerToCustomerDto(customer));
-        }
-
-        return customerReturn;
+        return customerRepository.findAll()
+                .stream()
+                .map(customerMapper::customerToCustomerDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -41,13 +37,10 @@ public class CustomerServiceImpl implements CustomerService {
 
         log.debug("customer dy id service call");
 
-        if (customerRepository.findById(id).isEmpty()) {
-            return Optional.empty();
-        }
-
-        var customer = customerRepository.findById(id).get();
-
-        return Optional.of(customerMapper.customerToCustomerDto(customer));
+        return Optional.ofNullable(customerMapper
+                .customerToCustomerDto(customerRepository
+                        .findById(id)
+                        .orElse(null)));
     }
 
     @Override
