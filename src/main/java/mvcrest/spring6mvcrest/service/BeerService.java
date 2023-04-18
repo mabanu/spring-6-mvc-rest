@@ -1,21 +1,21 @@
 package mvcrest.spring6mvcrest.service;
 
-import mvcrest.spring6mvcrest.model.Beer;
+import mvcrest.spring6mvcrest.model.BeerDTO;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface BeerService {
-    List<Beer> listBeer();
+    List<BeerDTO> listBeer();
 
-    Optional<Beer> getBeerById(UUID id);
+    Optional<BeerDTO> getBeerById(UUID id);
 
-    Beer savedNewBeer(Beer beer);
+    BeerDTO savedNewBeer(BeerDTO beerDTO);
 
-    void beerUpdate(UUID id, Beer beer);
+    void beerUpdate(UUID id, BeerDTO beerDTO);
 
-    void beerPatch(UUID id, Beer beer);
+    void beerPatch(UUID id, BeerDTO beerDTO);
 
     void beerDelete(UUID id);
 }

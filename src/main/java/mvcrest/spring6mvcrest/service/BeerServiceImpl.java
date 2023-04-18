@@ -1,146 +1,127 @@
 package mvcrest.spring6mvcrest.service;
 
 import lombok.extern.slf4j.Slf4j;
-import mvcrest.spring6mvcrest.model.Beer;
-import mvcrest.spring6mvcrest.model.BeerStyle;
+import mvcrest.spring6mvcrest.mappers.BeerMapper;
+import mvcrest.spring6mvcrest.model.BeerDTO;
+import mvcrest.spring6mvcrest.repositories.BeerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
 public class BeerServiceImpl implements BeerService {
 
-    private final Map<UUID, Beer> beerMap;
+    private final BeerRepository beerRepository;
+    private final BeerMapper beerMapper;
 
-    public BeerServiceImpl() {
-        this.beerMap = new HashMap<>();
-
-        var beer1 = Beer.builder()
-                .id(UUID.randomUUID())
-                .version(1)
-                .beerName("Beer 1")
-                .beerStyle(BeerStyle.LAGER)
-                .upc("I dont know what upc mean")
-                .quantityOnHand(500)
-                .price(new BigDecimal("35.67"))
-                .createdDate(LocalDateTime.now())
-                .UpdateDate(LocalDateTime.now())
-                .build();
-
-        var beer2 = Beer.builder()
-                .id(UUID.randomUUID())
-                .version(1)
-                .beerName("Beer 2")
-                .beerStyle(BeerStyle.IPA)
-                .upc("I dont know what upc mean")
-                .quantityOnHand(500)
-                .price(new BigDecimal("35.67"))
-                .createdDate(LocalDateTime.now())
-                .UpdateDate(LocalDateTime.now())
-                .build();
-
-        var beer3 = Beer.builder()
-                .id(UUID.randomUUID())
-                .version(1)
-                .beerName("Beer 3")
-                .beerStyle(BeerStyle.GOSE)
-                .upc("I dont know what upc mean")
-                .quantityOnHand(500)
-                .price(new BigDecimal("35.67"))
-                .createdDate(LocalDateTime.now())
-                .UpdateDate(LocalDateTime.now())
-                .build();
-
-        beerMap.put(beer1.getId(), beer1);
-        beerMap.put(beer2.getId(), beer2);
-        beerMap.put(beer3.getId(), beer3);
+    public BeerServiceImpl(BeerRepository beerRepository, BeerMapper beerMapper) {
+        this.beerRepository = beerRepository;
+        this.beerMapper = beerMapper;
     }
 
     @Override
-    public List<Beer> listBeer() {
-        return new ArrayList<>(beerMap.values());
+    public List<BeerDTO> listBeer() {
+        var beers = beerRepository.findAll();
+        var beersDtos = new ArrayList<BeerDTO>();
+
+        for (var beer : beers) {
+            beersDtos.add(beerMapper.beerToBeerDto(beer));
+        }
+
+        return beersDtos;
     }
 
     @Override
-    public Optional<Beer> getBeerById(UUID id) {
+    public Optional<BeerDTO> getBeerById(UUID id) {
         log.debug("Beer service debug beerId: " + id);
 
-        return Optional.of(beerMap.get(id));
+        if (beerRepository.findById(id).isEmpty()) {
+            return Optional.empty();
+        }
+
+        var beer = beerRepository.findById(id).get();
+
+        var beerDto = beerMapper.beerToBeerDto(beer);
+
+        return Optional.of(beerDto);
     }
 
     @Override
-    public Beer savedNewBeer(Beer beer) {
-        var beerSaved = Beer.builder()
-                .id(UUID.randomUUID())
-                .beerName(beer.getBeerName())
-                .beerStyle(beer.getBeerStyle())
-                .version(beer.getVersion())
-                .upc(beer.getUpc())
-                .price(beer.getPrice())
-                .quantityOnHand(beer.getQuantityOnHand())
-                .createdDate(LocalDateTime.now())
-                .UpdateDate(LocalDateTime.now())
-                .build();
+    public BeerDTO savedNewBeer(BeerDTO beerDTO) {
+        var beerDtoToBeer = beerMapper.beerDtoToBeer(beerDTO);
 
-        beerMap.put(beerSaved.getId(), beerSaved);
+        var beerSaved = beerRepository.save(beerDtoToBeer);
 
-        return beerSaved;
+        return beerMapper.beerToBeerDto(beerSaved);
     }
 
     @Override
-    public void beerUpdate(UUID id, Beer beer) {
-        var beerUpdate = beerMap.get(id);
+    public void beerUpdate(UUID id, BeerDTO beerDTO) {
 
-        beerUpdate.setBeerName(beer.getBeerName());
-        beerUpdate.setBeerStyle(beer.getBeerStyle());
-        beerUpdate.setUpdateDate(LocalDateTime.now());
-        beerUpdate.setPrice(beer.getPrice());
-        beerUpdate.setQuantityOnHand(beer.getQuantityOnHand());
-        beerUpdate.setUpc(beer.getUpc());
+        var beerCheck = beerRepository.findById(id);
 
-        beerMap.put(beerUpdate.getId(), beerUpdate);
+        if (beerCheck.isPresent()) {
+            var beerUpdate = beerCheck.get();
+
+            beerUpdate.setBeerName(beerDTO.getBeerName());
+            beerUpdate.setUpdatedDate(LocalDateTime.now());
+            beerUpdate.setBeerStyle(beerDTO.getBeerStyle());
+            beerUpdate.setPrice(beerDTO.getPrice());
+            beerUpdate.setUpc(beerDTO.getUpc());
+            beerUpdate.setQuantityOnHand(beerDTO.getQuantityOnHand());
+
+            beerRepository.save(beerUpdate);
+        }
     }
 
     @Override
-    public void beerPatch(UUID id, Beer beer) {
+    public void beerPatch(UUID id, BeerDTO beerDTO) {
 
-        var beerPatch = beerMap.get(id);
+        var beerCheck = beerRepository.findById(id);
 
-        if (StringUtils.hasText(beer.getBeerName())) {
-            beerPatch.setBeerName(beer.getBeerName());
+        if (beerCheck.isEmpty()) {
+            return;
         }
 
-        if (StringUtils.hasText(beer.getUpc())) {
-            beerPatch.setUpc(beer.getUpc());
+        var beerPatch = beerCheck.get();
+
+        if (StringUtils.hasText(beerDTO.getBeerName())) {
+            beerPatch.setBeerName(beerDTO.getBeerName());
         }
 
-        if (beer.getBeerStyle() != null) {
-            beerPatch.setBeerStyle(beer.getBeerStyle());
+        if (StringUtils.hasText(beerDTO.getUpc())) {
+            beerPatch.setUpc(beerDTO.getUpc());
         }
 
-        if (beer.getPrice() != null) {
-            beerPatch.setPrice(beer.getPrice());
+        if (beerDTO.getBeerStyle() != null) {
+            beerPatch.setBeerStyle(beerDTO.getBeerStyle());
         }
 
-        if (beer.getQuantityOnHand() != null) {
-            beerPatch.setQuantityOnHand(beer.getQuantityOnHand());
+        if (beerDTO.getPrice() != null) {
+            beerPatch.setPrice(beerDTO.getPrice());
         }
 
-        beerPatch.setUpdateDate(LocalDateTime.now());
-
-        if (beer.getPrice() != null) {
-            beerPatch.setVersion(beer.getVersion());
+        if (beerDTO.getQuantityOnHand() != null) {
+            beerPatch.setQuantityOnHand(beerDTO.getQuantityOnHand());
         }
 
-        beerMap.put(beerPatch.getId(), beerPatch);
+        beerPatch.setUpdatedDate(LocalDateTime.now());
+
+        if (beerDTO.getPrice() != null) {
+            beerPatch.setVersion(beerDTO.getVersion());
+        }
+
+        beerRepository.save(beerPatch);
     }
 
     @Override
     public void beerDelete(UUID id) {
-        beerMap.remove(id);
+        beerRepository.deleteById(id);
     }
 }

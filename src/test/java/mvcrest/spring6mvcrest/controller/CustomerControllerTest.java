@@ -1,9 +1,8 @@
 package mvcrest.spring6mvcrest.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import mvcrest.spring6mvcrest.model.Customer;
+import mvcrest.spring6mvcrest.model.CustomerDTO;
 import mvcrest.spring6mvcrest.service.CustomerService;
-import mvcrest.spring6mvcrest.service.CustomerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -14,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,19 +42,27 @@ class CustomerControllerTest {
     ArgumentCaptor<UUID> uuidArgumentCaptor = ArgumentCaptor.forClass(UUID.class);
 
     @Captor
-    ArgumentCaptor<Customer> customerArgumentCaptor = ArgumentCaptor.forClass(Customer.class);
+    ArgumentCaptor<CustomerDTO> customerArgumentCaptor = ArgumentCaptor.forClass(CustomerDTO.class);
 
-    CustomerServiceImpl customerServiceImpl;
+    CustomerDTO customerTest;
+    ArrayList<CustomerDTO> customers;
 
     @BeforeEach
     void setUp() {
-        customerServiceImpl = new CustomerServiceImpl();
+        customerTest = CustomerDTO.builder()
+                .id(UUID.randomUUID())
+                .customerName("customer1")
+                .version(1)
+                .build();
+
+        customers = new ArrayList<>();
+        customers.add(customerTest);
     }
 
     @Test
     void getListCustomers() throws Exception {
 
-        var listCustomerTest = customerServiceImpl.listCustomers();
+        var listCustomerTest = customers;
 
         given(customerService.listCustomers()).willReturn(listCustomerTest);
 
@@ -62,14 +70,12 @@ class CustomerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()", is(3)));
+                .andExpect(jsonPath("$.length()", is(1)));
 
     }
 
     @Test
     void getCustomerById() throws Exception {
-
-        var customerTest = customerServiceImpl.listCustomers().get(0);
 
         given(customerService.getCustomerById(customerTest.getId())).willReturn(Optional.of(customerTest));
 
@@ -84,9 +90,9 @@ class CustomerControllerTest {
     @Test
     void handlePostCustomer() throws Exception {
 
-        var customerCreated = customerServiceImpl.listCustomers().get(0);
+        var customerCreated = customerTest;
 
-        given(customerService.savedNewCustomer(any(Customer.class))).willReturn(customerCreated);
+        given(customerService.savedNewCustomer(any(CustomerDTO.class))).willReturn(customerCreated);
 
         mockMvc.perform(post(CustomerController.CUSTOMER_PATH)
                         .accept(MediaType.APPLICATION_JSON)
@@ -100,7 +106,7 @@ class CustomerControllerTest {
     @Test
     void handlerPutCustomer() throws Exception {
 
-        var putCustomer = customerServiceImpl.listCustomers().get(0);
+        var putCustomer = customerTest;
 
         mockMvc.perform(put(CustomerController.CUSTOMER_PATH_ID, putCustomer.getId())
                         .accept(MediaType.APPLICATION_JSON)
@@ -112,7 +118,7 @@ class CustomerControllerTest {
     @Test
     void handlerPatchCustomer() throws Exception {
 
-        var patchCustomer = customerServiceImpl.listCustomers().get(0);
+        var patchCustomer = customerTest;
 
         var customerMap = new HashMap<String, Object>();
         customerMap.put("customerName", "new name");
@@ -132,7 +138,7 @@ class CustomerControllerTest {
     @Test
     void handlerDeleteCustomer() throws Exception {
 
-        var deleteCustomer = customerServiceImpl.listCustomers().get(0);
+        var deleteCustomer = customerTest;
 
         mockMvc.perform(delete(CustomerController.CUSTOMER_PATH_ID, deleteCustomer.getId()))
                 .andExpect(status().isNoContent());

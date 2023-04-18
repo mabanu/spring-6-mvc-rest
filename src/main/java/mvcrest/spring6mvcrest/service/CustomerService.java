@@ -1,20 +1,20 @@
 package mvcrest.spring6mvcrest.service;
 
-import mvcrest.spring6mvcrest.model.Customer;
+import mvcrest.spring6mvcrest.model.CustomerDTO;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface CustomerService {
-    List<Customer> listCustomers();
-    Optional<Customer> getCustomerById(UUID customerID);
+    List<CustomerDTO> listCustomers();
+    Optional<CustomerDTO> getCustomerById(UUID id);
 
-    Customer savedNewCustomer(Customer customer);
+    CustomerDTO savedNewCustomer(CustomerDTO customerDTO);
 
-    void updateCustomer(UUID id, Customer customer);
+    void updateCustomer(UUID id, CustomerDTO customerDTO);
 
-    void patchCustomer(UUID id, Customer customer);
+    void patchCustomer(UUID id, CustomerDTO customerDTO);
 
     void deleteCustomer(UUID id);
 }

@@ -1,116 +1,111 @@
 package mvcrest.spring6mvcrest.service;
 
 import lombok.extern.slf4j.Slf4j;
-import mvcrest.spring6mvcrest.model.Customer;
+import mvcrest.spring6mvcrest.mappers.CustomerMapper;
+import mvcrest.spring6mvcrest.model.CustomerDTO;
+import mvcrest.spring6mvcrest.repositories.CustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
-    private final Map<UUID, Customer> mapCustomers;
+    private final CustomerRepository customerRepository;
+    private final CustomerMapper customerMapper;
 
-    public CustomerServiceImpl() {
-        this.mapCustomers = new HashMap<>();
+    public CustomerServiceImpl(CustomerRepository customerRepository, CustomerMapper customerMapper) {
 
-        var customer1 = Customer.builder()
-                .id(UUID.fromString("0d1cb520-2ec1-4ddd-a675-aecfaabde6e3"))
-                .customerName("Customer1")
-                .version(1)
-                .createdDate(LocalDateTime.now())
-                .lastModifiedDate(LocalDateTime.now())
-                .build();
-
-        var customer2 = Customer.builder()
-                .id(UUID.fromString("69516f42-91eb-4ec4-a7d7-869c0d8a5e75"))
-                .customerName("Customer2")
-                .version(2)
-                .createdDate(LocalDateTime.now())
-                .lastModifiedDate(LocalDateTime.now())
-                .build();
-
-        var customer3 = Customer.builder()
-                .id(UUID.fromString("69516f42-91eb-4ec4-a7d7-869c0d8a5e76"))
-                .customerName("Customer3")
-                .version(3)
-                .createdDate(LocalDateTime.now())
-                .lastModifiedDate(LocalDateTime.now())
-                .build();
-
-        mapCustomers.put(customer1.getId(), customer1);
-        mapCustomers.put(customer2.getId(), customer2);
-        mapCustomers.put(customer3.getId(), customer3);
+        this.customerRepository = customerRepository;
+        this.customerMapper = customerMapper;
     }
 
 
     @Override
-    public List<Customer> listCustomers() {
+    public List<CustomerDTO> listCustomers() {
         log.debug("customer list service call");
 
-        return new ArrayList<>(mapCustomers.values());
+        var customers = customerRepository.findAll();
+
+        var customerReturn = new ArrayList<CustomerDTO>();
+        for (var customer : customers) {
+            customerReturn.add(customerMapper.customerToCustomerDto(customer));
+        }
+
+        return customerReturn;
     }
 
     @Override
-    public Optional<Customer> getCustomerById(UUID customerID) {
+    public Optional<CustomerDTO> getCustomerById(UUID id) {
 
         log.debug("customer dy id service call");
 
-        return Optional.of(mapCustomers.get(customerID));
-    }
-
-    @Override
-    public Customer savedNewCustomer(Customer customer) {
-
-        Customer savedCustomer = Customer.builder()
-                .id(UUID.randomUUID())
-                .customerName(customer.getCustomerName())
-                .version(customer.getVersion())
-                .createdDate(LocalDateTime.now())
-                .lastModifiedDate(LocalDateTime.now())
-                .build();
-
-        mapCustomers.put(savedCustomer.getId(), savedCustomer);
-
-        return savedCustomer;
-    }
-
-    @Override
-    public void updateCustomer(UUID id, Customer customer) {
-
-        Customer updateCustomer = Customer.builder()
-                .customerName(customer.getCustomerName())
-                .version(customer.getVersion())
-                .lastModifiedDate(LocalDateTime.now())
-                .build();
-
-        mapCustomers.put(updateCustomer.getId(), updateCustomer);
-    }
-
-    @Override
-    public void patchCustomer(UUID id, Customer customer) {
-
-        var customerPatch = mapCustomers.get(id);
-
-        if (StringUtils.hasText(customer.getCustomerName())) {
-            customerPatch.setCustomerName(customer.getCustomerName());
+        if (customerRepository.findById(id).isEmpty()) {
+            return Optional.empty();
         }
 
-        if (customer.getVersion() != null) {
-            customerPatch.setVersion(customer.getVersion());
+        var customer = customerRepository.findById(id).get();
+
+        return Optional.of(customerMapper.customerToCustomerDto(customer));
+    }
+
+    @Override
+    public CustomerDTO savedNewCustomer(CustomerDTO customerDTO) {
+        var customerToSave = customerMapper.customerDtoToCustomer(customerDTO);
+
+        var customerSaved = customerRepository.save(customerToSave);
+
+        return customerMapper.customerToCustomerDto(customerSaved);
+    }
+
+    @Override
+    public void updateCustomer(UUID id, CustomerDTO customerDTO) {
+
+        var customerCheck = customerRepository.findById(id);
+
+        if (customerCheck.isPresent()) {
+            var customerUpdate = customerCheck.get();
+
+            customerUpdate.setCustomerName(customerDTO.getCustomerName());
+            customerUpdate.setLastModifiedDate(LocalDateTime.now());
+
+            customerRepository.save(customerUpdate);
+        }
+    }
+
+    @Override
+    public void patchCustomer(UUID id, CustomerDTO customerDTO) {
+
+        var customerCheck = customerRepository.findById(id);
+
+        if (customerCheck.isEmpty()) {
+            return;
+        }
+
+        var customerPatch = customerCheck.get();
+
+        if (StringUtils.hasText(customerDTO.getCustomerName())) {
+            customerPatch.setCustomerName(customerDTO.getCustomerName());
+        }
+
+        if (customerDTO.getVersion() != null) {
+            customerPatch.setVersion(customerDTO.getVersion());
         }
 
         customerPatch.setLastModifiedDate(LocalDateTime.now());
 
-        mapCustomers.put(customerPatch.getId(), customerPatch);
+        customerRepository.save(customerPatch);
     }
 
     @Override
     public void deleteCustomer(UUID id) {
 
-        mapCustomers.remove(id);
+        customerRepository.deleteById(id);
     }
 }

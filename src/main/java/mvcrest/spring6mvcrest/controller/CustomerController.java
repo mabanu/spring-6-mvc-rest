@@ -2,7 +2,7 @@ package mvcrest.spring6mvcrest.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mvcrest.spring6mvcrest.model.Customer;
+import mvcrest.spring6mvcrest.model.CustomerDTO;
 import mvcrest.spring6mvcrest.service.CustomerService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,48 +24,48 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @RequestMapping(value = CUSTOMER_PATH, method = RequestMethod.GET)
-    public List<Customer> getListCustomers() {
+    public List<CustomerDTO> getListCustomers() {
         log.debug("get list customers controller method call");
 
         return customerService.listCustomers();
     }
 
     @RequestMapping(value = CUSTOMER_PATH_ID, method = RequestMethod.GET)
-    public Customer getCustomerById(@PathVariable("id") UUID customerID) {
+    public CustomerDTO getCustomerById(@PathVariable("id") UUID customerID) {
         log.debug("get customer by id controller method call");
 
         return customerService.getCustomerById(customerID).orElseThrow(NotFoundException::new);
     }
 
     @PostMapping(CUSTOMER_PATH)
-    public ResponseEntity<Customer> handlePostCustomer(@RequestBody Customer customerPost) {
+    public ResponseEntity<CustomerDTO> handlePostCustomer(@RequestBody CustomerDTO customerDTOPost) {
 
-        Customer customerSaved = customerService.savedNewCustomer(customerPost);
+        CustomerDTO customerDTOSaved = customerService.savedNewCustomer(customerDTOPost);
 
         var header = new HttpHeaders();
-        header.add("location", CUSTOMER_PATH + "/" + customerSaved.getId().toString());
+        header.add("location", CUSTOMER_PATH + "/" + customerDTOSaved.getId().toString());
 
-        return new ResponseEntity<>(customerSaved, header, HttpStatus.CREATED);
+        return new ResponseEntity<>(customerDTOSaved, header, HttpStatus.CREATED);
     }
 
     @PutMapping(CUSTOMER_PATH_ID)
-    public ResponseEntity<Customer> handlerPutCustomer(@PathVariable("id") UUID id, @RequestBody Customer customer) {
+    public ResponseEntity<CustomerDTO> handlerPutCustomer(@PathVariable("id") UUID id, @RequestBody CustomerDTO customerDTO) {
 
-        customerService.updateCustomer(id, customer);
+        customerService.updateCustomer(id, customerDTO);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping(CUSTOMER_PATH_ID)
-    public ResponseEntity<Customer> handlerPatchCustomer(@PathVariable("id") UUID id, @RequestBody Customer customer) {
+    public ResponseEntity<CustomerDTO> handlerPatchCustomer(@PathVariable("id") UUID id, @RequestBody CustomerDTO customerDTO) {
 
-        customerService.patchCustomer(id, customer);
+        customerService.patchCustomer(id, customerDTO);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping(CUSTOMER_PATH_ID)
-    public ResponseEntity<Customer> handlerDeleteCustomer(@PathVariable("id") UUID id) {
+    public ResponseEntity<CustomerDTO> handlerDeleteCustomer(@PathVariable("id") UUID id) {
 
         customerService.deleteCustomer(id);
 

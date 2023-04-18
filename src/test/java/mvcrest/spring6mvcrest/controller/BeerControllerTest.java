@@ -1,9 +1,9 @@
 package mvcrest.spring6mvcrest.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import mvcrest.spring6mvcrest.model.Beer;
+import mvcrest.spring6mvcrest.model.BeerDTO;
+import mvcrest.spring6mvcrest.model.BeerStyle;
 import mvcrest.spring6mvcrest.service.BeerService;
-import mvcrest.spring6mvcrest.service.BeerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -14,6 +14,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,19 +45,31 @@ class BeerControllerTest {
     ArgumentCaptor<UUID> uuidArgumentCaptor = ArgumentCaptor.forClass(UUID.class);
 
     @Captor
-    ArgumentCaptor<Beer> beerArgumentCaptor = ArgumentCaptor.forClass(Beer.class);
+    ArgumentCaptor<BeerDTO> beerArgumentCaptor = ArgumentCaptor.forClass(BeerDTO.class);
 
-    BeerServiceImpl beerServiceImpl;
+    BeerDTO beerTest;
+    ArrayList<BeerDTO> beerListTest;
+
 
     @BeforeEach
     void setUp() {
-        beerServiceImpl = new BeerServiceImpl();
+        beerTest = BeerDTO.builder()
+                .id(UUID.randomUUID())
+                .beerName("beer1")
+                .beerStyle(BeerStyle.GOSE)
+                .price(new BigDecimal("1.45"))
+                .upc("12345")
+                .quantityOnHand(500)
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
+                .build();
+
+        beerListTest = new ArrayList<>();
+        beerListTest.add(beerTest);
     }
 
     @Test
     void getBeerById() throws Exception {
-
-        var beerTest = beerServiceImpl.listBeer().get(0);
 
         given(beerService.getBeerById(beerTest.getId())).willReturn(Optional.of(beerTest));
 
@@ -70,23 +85,21 @@ class BeerControllerTest {
     @Test
     void beerList() throws Exception {
 
-        var beerListTest = beerServiceImpl.listBeer();
-
         given(beerService.listBeer()).willReturn(beerListTest);
 
         mockMvc.perform(get(BeerController.BEER_PATH)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()", is(3)));
+                .andExpect(jsonPath("$.length()", is(1)));
     }
 
     @Test
     void handleBeerPost() throws Exception {
 
-        var beerCreated = beerServiceImpl.listBeer().get(0);
+        var beerCreated = beerTest;
 
-        given(beerService.savedNewBeer(any(Beer.class))).willReturn(beerCreated);
+        given(beerService.savedNewBeer(any(BeerDTO.class))).willReturn(beerCreated);
 
         mockMvc.perform(post(BeerController.BEER_PATH)
                         .accept(MediaType.APPLICATION_JSON)
@@ -99,7 +112,7 @@ class BeerControllerTest {
     @Test
     void handleBeerUpdate() throws Exception {
 
-        var beerUpdate = beerServiceImpl.listBeer().get(0);
+        var beerUpdate = beerTest;
 
         mockMvc.perform(put(BeerController.BEER_PATH_ID, beerUpdate.getId())
                         .accept(MediaType.APPLICATION_JSON)
@@ -111,7 +124,7 @@ class BeerControllerTest {
     @Test
     void handlerBeerPatch() throws Exception {
 
-        var patchBeer = beerServiceImpl.listBeer().get(0);
+        var patchBeer = beerTest;
 
         var beerMap = new HashMap<String, Object>();
         beerMap.put("beerName", "new name");
@@ -131,7 +144,7 @@ class BeerControllerTest {
     @Test
     void handlerBeerDelete() throws Exception {
 
-        var deleteBeer = beerServiceImpl.listBeer().get(0);
+        var deleteBeer = beerTest;
 
         mockMvc.perform(delete(BeerController.BEER_PATH_ID, deleteBeer.getId()))
                 .andExpect(status().isNoContent());
