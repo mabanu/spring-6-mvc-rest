@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -45,35 +46,35 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDTO savedNewCustomer(CustomerDTO customerDTO) {
-        var customerToSave = customerMapper.customerDtoToCustomer(customerDTO);
 
-        var customerSaved = customerRepository.save(customerToSave);
+        return customerMapper.customerToCustomerDto(customerRepository.save(
+                customerMapper.customerDtoToCustomer(customerDTO)));
 
-        return customerMapper.customerToCustomerDto(customerSaved);
     }
 
     @Override
-    public void updateCustomer(UUID id, CustomerDTO customerDTO) {
+    public Optional<CustomerDTO> updateCustomer(UUID id, CustomerDTO customerDTO) {
 
-        var customerCheck = customerRepository.findById(id);
+        AtomicReference<Optional<CustomerDTO>> atomicReference = new AtomicReference<>();
 
-        if (customerCheck.isPresent()) {
-            var customerUpdate = customerCheck.get();
-
+        customerRepository.findById(id).ifPresentOrElse( customerUpdate -> {
             customerUpdate.setCustomerName(customerDTO.getCustomerName());
             customerUpdate.setLastModifiedDate(LocalDateTime.now());
 
-            customerRepository.save(customerUpdate);
-        }
+            atomicReference.set(Optional.of(customerMapper.customerToCustomerDto(customerRepository.save(customerUpdate))));
+
+        }, () -> atomicReference.set(Optional.empty()));
+
+        return atomicReference.get();
     }
 
     @Override
-    public void patchCustomer(UUID id, CustomerDTO customerDTO) {
+    public Optional<CustomerDTO> patchCustomer(UUID id, CustomerDTO customerDTO) {
 
         var customerCheck = customerRepository.findById(id);
 
         if (customerCheck.isEmpty()) {
-            return;
+            return Optional.empty();
         }
 
         var customerPatch = customerCheck.get();
@@ -88,12 +89,17 @@ public class CustomerServiceImpl implements CustomerService {
 
         customerPatch.setLastModifiedDate(LocalDateTime.now());
 
-        customerRepository.save(customerPatch);
+        return Optional.of(customerMapper.customerToCustomerDto(customerRepository.save(customerPatch)));
     }
 
     @Override
-    public void deleteCustomer(UUID id) {
+    public Boolean deleteCustomer(UUID id) {
 
-        customerRepository.deleteById(id);
+        if (customerRepository.existsById(id)) {
+            customerRepository.deleteById(id);
+            return true;
+        }
+
+        return false;
     }
 }
