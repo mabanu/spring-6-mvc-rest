@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import mvcrest.spring6mvcrest.model.BeerDTO;
 import mvcrest.spring6mvcrest.model.BeerStyle;
 import mvcrest.spring6mvcrest.service.BeerService;
+import mvcrest.spring6mvcrest.service.BeerServiceNoJpaImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -41,6 +43,8 @@ class BeerControllerTest {
     @MockBean
     BeerService beerService;
 
+    BeerServiceNoJpaImpl beerServiceNoJpa;
+
     @Captor
     ArgumentCaptor<UUID> uuidArgumentCaptor = ArgumentCaptor.forClass(UUID.class);
 
@@ -66,6 +70,8 @@ class BeerControllerTest {
 
         beerListTest = new ArrayList<>();
         beerListTest.add(beerTest);
+
+        beerServiceNoJpa = new BeerServiceNoJpaImpl();
     }
 
     @Test
@@ -166,5 +172,22 @@ class BeerControllerTest {
         mockMvc.perform(get(BeerController.BEER_PATH_ID, UUID.randomUUID())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void createdBeerNullNameTest() throws Exception {
+        BeerDTO beerDTO = BeerDTO.builder().build();
+
+        given(beerService.savedNewBeer(any(BeerDTO.class))).willReturn(beerServiceNoJpa.listBeer().get(1));
+
+        MvcResult response = mockMvc.perform(post(BeerController.BEER_PATH)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(beerDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.length()", is(2)))
+                .andReturn();
+
+        System.out.println(response.getResponse().getContentAsString());
     }
 }

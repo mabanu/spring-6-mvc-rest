@@ -2,6 +2,7 @@ package mvcrest.spring6mvcrest.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mvcrest.spring6mvcrest.model.CustomerDTO;
+import mvcrest.spring6mvcrest.repositories.CustomerRepository;
 import mvcrest.spring6mvcrest.service.CustomerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -108,6 +110,8 @@ class CustomerControllerTest {
 
         var putCustomer = customerTest;
 
+        given(customerService.updateCustomer(any(), any())).willReturn(Optional.of(putCustomer));
+
         mockMvc.perform(put(CustomerController.CUSTOMER_PATH_ID, putCustomer.getId())
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -139,6 +143,8 @@ class CustomerControllerTest {
     void handlerDeleteCustomer() throws Exception {
 
         var deleteCustomer = customerTest;
+
+        given(customerService.deleteCustomer(any())).willReturn(true);
 
         mockMvc.perform(delete(CustomerController.CUSTOMER_PATH_ID, deleteCustomer.getId()))
                 .andExpect(status().isNoContent());

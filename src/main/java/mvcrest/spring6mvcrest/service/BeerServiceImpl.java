@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mvcrest.spring6mvcrest.mappers.BeerMapper;
 import mvcrest.spring6mvcrest.model.BeerDTO;
 import mvcrest.spring6mvcrest.repositories.BeerRepository;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -13,10 +14,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@Primary
 @AllArgsConstructor
 public class BeerServiceImpl implements BeerService {
 
@@ -28,7 +29,7 @@ public class BeerServiceImpl implements BeerService {
         return beerRepository.findAll()
                 .stream()
                 .map(beerMapper::beerToBeerDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -60,20 +61,18 @@ public class BeerServiceImpl implements BeerService {
             beerUpdate.setQuantityOnHand(beerDTO.getQuantityOnHand());
 
             atomicReference.set(Optional.of(beerMapper.beerToBeerDto(beerRepository.save(beerUpdate))));
-        }, () -> {
-            atomicReference.set(Optional.empty());
-        });
+        }, () ->  atomicReference.set(Optional.empty()));
 
         return atomicReference.get();
     }
 
     @Override
-    public void beerPatch(UUID id, BeerDTO beerDTO) {
+    public Optional<BeerDTO> beerPatch(UUID id, BeerDTO beerDTO) {
 
         var beerCheck = beerRepository.findById(id);
 
         if (beerCheck.isEmpty()) {
-            return;
+            return Optional.empty();
         }
 
         var beerPatch = beerCheck.get();
@@ -104,7 +103,7 @@ public class BeerServiceImpl implements BeerService {
             beerPatch.setVersion(beerDTO.getVersion());
         }
 
-        beerRepository.save(beerPatch);
+        return Optional.of(beerMapper.beerToBeerDto(beerRepository.save(beerPatch)));
     }
 
     @Override

@@ -30,7 +30,7 @@ public class CustomerController {
         return customerService.listCustomers();
     }
 
-    @RequestMapping(value = CUSTOMER_PATH_ID, method = RequestMethod.GET)
+    @GetMapping(value = CUSTOMER_PATH_ID)
     public CustomerDTO getCustomerById(@PathVariable("id") UUID customerID) {
         log.debug("get customer by id controller method call");
 
@@ -69,7 +69,7 @@ public class CustomerController {
     @DeleteMapping(CUSTOMER_PATH_ID)
     public ResponseEntity<CustomerDTO> handlerDeleteCustomer(@PathVariable("id") UUID id) {
 
-        if (customerService.deleteCustomer(id)) {
+        if (Boolean.TRUE.equals(customerService.deleteCustomer(id))) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         throw new NotFoundException();

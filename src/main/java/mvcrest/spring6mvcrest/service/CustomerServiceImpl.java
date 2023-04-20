@@ -30,7 +30,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findAll()
                 .stream()
                 .map(customerMapper::customerToCustomerDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

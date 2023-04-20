@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.Rollback;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +36,7 @@ class CustomerControllerIT {
 
         var customers = customerController.getListCustomers();
 
-        assertThat(customers.size()).isEqualTo(2);
+        assertThat(customers).hasSize(2);
     }
 
     @Rollback
@@ -46,7 +47,7 @@ class CustomerControllerIT {
 
         var customers = customerController.getListCustomers();
 
-        assertThat(customers.size()).isEqualTo(0);
+        assertThat(customers).isEmpty();
     }
 
     @Test
@@ -72,7 +73,7 @@ class CustomerControllerIT {
                 .customerName("new test")
                 .build();
 
-        ResponseEntity response = customerController.handlePostCustomer(customerDto);
+        ResponseEntity<CustomerDTO> response = customerController.handlePostCustomer(customerDto);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getHeaders().getLocation()).isNotNull();
@@ -93,28 +94,27 @@ class CustomerControllerIT {
         final String nameUpdate = "NAME UPDATE TEST";
         customerDtoUpdate.setCustomerName(nameUpdate);
 
-        ResponseEntity response = customerController.handlerPutCustomer(customerDtoUpdate.getId(), customerDtoUpdate);
+        ResponseEntity<CustomerDTO> response = customerController.handlerPutCustomer(customerDtoUpdate.getId(), customerDtoUpdate);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
-        Customer updateCreated = customerRepository.findById(customerDtoUpdate.getId()).get();
-
-        assertThat(updateCreated.getCustomerName()).isEqualTo(nameUpdate);
+        customerRepository.findById(customerDtoUpdate.getId())
+                .ifPresent(customer -> assertThat(customer.getCustomerName()).isEqualTo(nameUpdate));
     }
 
     @Test
     void updateCustomerNotFoundTest() {
 
-        assertThrows(NotFoundException.class, () -> {
-            customerController.handlerPutCustomer(UUID.randomUUID(), CustomerDTO.builder().build());
-        });
+        assertThrows(NotFoundException.class, () -> customerController.handlerPutCustomer(UUID.randomUUID(), CustomerDTO.builder().build()));
     }
 
+    @Rollback
+    @Transactional
     @Test
     void deleteCustomerTest() {
         Customer customer = customerRepository.findAll().get(0);
 
-        ResponseEntity response = customerController.handlerDeleteCustomer(customer.getId());
+        ResponseEntity<CustomerDTO> response = customerController.handlerDeleteCustomer(customer.getId());
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(customerRepository.findById(customer.getId())).isEmpty();
@@ -122,8 +122,6 @@ class CustomerControllerIT {
 
     @Test
     void deleteCustomerNotFoundTest() {
-        assertThrows(NotFoundException.class, () -> {
-           customerController.handlerDeleteCustomer(UUID.randomUUID());
-        });
+        assertThrows(NotFoundException.class, () -> customerController.handlerDeleteCustomer(UUID.randomUUID()));
     }
 }

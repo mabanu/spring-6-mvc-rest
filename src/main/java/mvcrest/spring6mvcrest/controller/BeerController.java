@@ -7,6 +7,7 @@ import mvcrest.spring6mvcrest.service.BeerService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class BeerController {
     }
 
     @PostMapping(BEER_PATH)
-    public ResponseEntity<BeerDTO> handleBeerPost(@RequestBody BeerDTO beerDTOPost) {
+    public ResponseEntity<BeerDTO> handleBeerPost(@Validated @RequestBody BeerDTO beerDTOPost) {
 
         BeerDTO beerDTOSaved = beerService.savedNewBeer(beerDTOPost);
 
@@ -68,7 +69,7 @@ public class BeerController {
     @DeleteMapping(BEER_PATH_ID)
     public ResponseEntity<BeerDTO> handlerBeerDelete(@PathVariable("beerId") UUID id) {
 
-        if (beerService.beerDelete(id)) {
+        if (Boolean.TRUE.equals(beerService.beerDelete(id))) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
