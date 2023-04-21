@@ -1,6 +1,7 @@
 package mvcrest.spring6mvcrest.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import mvcrest.spring6mvcrest.model.BeerDTO;
 import mvcrest.spring6mvcrest.model.BeerStyle;
 import mvcrest.spring6mvcrest.service.BeerService;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -64,8 +66,8 @@ class BeerControllerTest {
                 .price(new BigDecimal("1.45"))
                 .upc("12345")
                 .quantityOnHand(500)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
+                .createdDate(LocalDateTime.now().plusMinutes(1))
+                .updatedDate(LocalDateTime.now().plusMinutes(1))
                 .build();
 
         beerListTest = new ArrayList<>();
@@ -100,6 +102,7 @@ class BeerControllerTest {
                 .andExpect(jsonPath("$.length()", is(1)));
     }
 
+    @Rollback
     @Test
     void handleBeerPost() throws Exception {
 
@@ -149,6 +152,7 @@ class BeerControllerTest {
         assertThat(beerArgumentCaptor.getValue().getBeerName()).isEqualTo(beerMap.get("beerName"));
     }
 
+    @Rollback
     @Test
     void handlerBeerDelete() throws Exception {
 
@@ -174,6 +178,7 @@ class BeerControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Rollback
     @Test
     void createdBeerNullNameTest() throws Exception {
         BeerDTO beerDTO = BeerDTO.builder().build();
@@ -185,7 +190,7 @@ class BeerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(beerDTO)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.length()", is(2)))
+                .andExpect(jsonPath("$.length()", is(4)))
                 .andReturn();
 
         System.out.println(response.getResponse().getContentAsString());

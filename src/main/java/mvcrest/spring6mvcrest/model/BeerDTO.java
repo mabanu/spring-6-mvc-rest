@@ -1,6 +1,9 @@
 package mvcrest.spring6mvcrest.model;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,16 +17,15 @@ public class BeerDTO {
     private UUID id;
     private Integer version;
 
-    @NotBlank
-    @NotNull
+    @NotBlank @NotNull
     private String beerName;
     private BeerStyle beerStyle;
     private String upc;
 
-    @NotBlank @NotNull @Positive
+    @NotNull @Positive
     private Integer quantityOnHand;
 
-    @NotBlank @NotNull @Positive
+    @NotNull @Positive
     private BigDecimal price;
 
     @FutureOrPresent
