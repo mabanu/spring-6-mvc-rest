@@ -1,7 +1,6 @@
 package mvcrest.spring6mvcrest.model;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,8 +19,16 @@ public class BeerDTO {
     private String beerName;
     private BeerStyle beerStyle;
     private String upc;
+
+    @NotBlank @NotNull @Positive
     private Integer quantityOnHand;
+
+    @NotBlank @NotNull @Positive
     private BigDecimal price;
+
+    @FutureOrPresent
     private LocalDateTime createdDate;
+
+    @FutureOrPresent
     private LocalDateTime updatedDate;
 }
