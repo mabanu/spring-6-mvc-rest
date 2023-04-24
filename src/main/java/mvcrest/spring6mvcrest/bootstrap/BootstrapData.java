@@ -1,6 +1,6 @@
 package mvcrest.spring6mvcrest.bootstrap;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import mvcrest.spring6mvcrest.entities.Beer;
 import mvcrest.spring6mvcrest.entities.Customer;
 import mvcrest.spring6mvcrest.model.BeerStyle;
@@ -11,9 +11,10 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.UUID;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Component
 public class BootstrapData implements CommandLineRunner {
 
@@ -22,46 +23,78 @@ public class BootstrapData implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        var beer1 = Beer.builder()
-                .beerName("beer1")
-                .beerStyle(BeerStyle.GOSE)
-                .price(new BigDecimal("1.45"))
-                .upc("12345")
-                .quantityOnHand(500)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
+        loadBeerData();
+        loadCustomerData();
+    }
 
-        var beer2 = Beer.builder()
-                .beerName("beer2")
-                .beerStyle(BeerStyle.PORTER)
-                .price(new BigDecimal("2.45"))
-                .upc("22345")
-                .quantityOnHand(500)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
+    private void loadBeerData() {
+        if (beerRepository.count() == 0){
+            Beer beer1 = Beer.builder()
+                    .beerName("Galaxy Cat")
+                    .beerStyle(BeerStyle.PALE_ALE)
+                    .upc("12356")
+                    .price(new BigDecimal("12.99"))
+                    .quantityOnHand(122)
+                    .createdDate(LocalDateTime.now())
+                    .updatedDate(LocalDateTime.now())
+                    .build();
 
-        var beers = new ArrayList<Beer>();
-        beers.add(beer1);
-        beers.add(beer2);
+            Beer beer2 = Beer.builder()
+                    .beerName("Crank")
+                    .beerStyle(BeerStyle.PALE_ALE)
+                    .upc("12356222")
+                    .price(new BigDecimal("11.99"))
+                    .quantityOnHand(392)
+                    .createdDate(LocalDateTime.now())
+                    .updatedDate(LocalDateTime.now())
+                    .build();
 
-        beerRepository.saveAll(beers);
+            Beer beer3 = Beer.builder()
+                    .beerName("Sunshine City")
+                    .beerStyle(BeerStyle.IPA)
+                    .upc("12356")
+                    .price(new BigDecimal("13.99"))
+                    .quantityOnHand(144)
+                    .createdDate(LocalDateTime.now())
+                    .updatedDate(LocalDateTime.now())
+                    .build();
 
-        var customer1 = Customer.builder()
-                .customerName("customer1")
-                .version(1)
-                .build();
+            beerRepository.save(beer1);
+            beerRepository.save(beer2);
+            beerRepository.save(beer3);
+        }
 
-        var customer2 = Customer.builder()
-                .customerName("customer2")
-                .version(1)
-                .build();
+    }
 
-        var customers = new ArrayList<Customer>();
-        customers.add(customer1);
-        customers.add(customer2);
+    private void loadCustomerData() {
 
-        customerRepository.saveAll(customers);
+        if (customerRepository.count() == 0) {
+            Customer customer1 = Customer.builder()
+                    .id(UUID.randomUUID())
+                    .customerName("Customer 1")
+                    .version(1)
+                    .createdDate(LocalDateTime.now())
+                    .lastModifiedDate(LocalDateTime.now())
+                    .build();
+
+            Customer customer2 = Customer.builder()
+                    .id(UUID.randomUUID())
+                    .customerName("Customer 2")
+                    .version(1)
+                    .createdDate(LocalDateTime.now())
+                    .lastModifiedDate(LocalDateTime.now())
+                    .build();
+
+            Customer customer3 = Customer.builder()
+                    .id(UUID.randomUUID())
+                    .customerName("Customer 3")
+                    .version(1)
+                    .createdDate(LocalDateTime.now())
+                    .lastModifiedDate(LocalDateTime.now())
+                    .build();
+
+            customerRepository.saveAll(Arrays.asList(customer1, customer2, customer3));
+        }
+
     }
 }

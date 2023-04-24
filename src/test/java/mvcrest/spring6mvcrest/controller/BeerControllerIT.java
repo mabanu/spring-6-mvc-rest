@@ -58,7 +58,7 @@ class BeerControllerIT {
     void listBeersTest() {
         var dtos = beerController.beerList();
 
-        assertThat(dtos).hasSize(2);
+        assertThat(dtos).hasSize(3);
     }
 
     @Rollback

@@ -36,7 +36,7 @@ class CustomerControllerIT {
 
         var customers = customerController.getListCustomers();
 
-        assertThat(customers).hasSize(2);
+        assertThat(customers).hasSize(3);
     }
 
     @Rollback
