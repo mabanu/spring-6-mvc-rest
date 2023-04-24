@@ -1,6 +1,8 @@
 package mvcrest.spring6mvcrest.controller;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,5 +26,25 @@ public class CustomErrorController {
                 }).toList();
 
         return ResponseEntity.badRequest().body(errorList);
+    }
+
+    @ExceptionHandler
+    ResponseEntity<Object> handleJpaViolations(TransactionSystemException exception) {
+        ResponseEntity.BodyBuilder response = ResponseEntity.badRequest();
+
+        if (exception.getCause().getCause() instanceof ConstraintViolationException constraintViolationException) {
+
+            List<Map<String, String>> errors = constraintViolationException.getConstraintViolations().stream()
+                    .map( constraintViolation -> {
+                        Map<String, String> errorMap = new HashMap<>();
+                        errorMap.put( constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage());
+
+                        return errorMap;
+                    }).toList();
+
+            return response.body(errors);
+        }
+
+        return response.build();
     }
 }

@@ -1,7 +1,6 @@
 package mvcrest.spring6mvcrest.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import mvcrest.spring6mvcrest.model.BeerDTO;
 import mvcrest.spring6mvcrest.model.BeerStyle;
 import mvcrest.spring6mvcrest.service.BeerService;
