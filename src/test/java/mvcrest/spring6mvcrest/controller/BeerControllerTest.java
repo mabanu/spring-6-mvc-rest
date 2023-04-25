@@ -92,13 +92,14 @@ class BeerControllerTest {
     @Test
     void beerList() throws Exception {
 
-        given(beerService.listBeer()).willReturn(beerListTest);
+        given(beerService.beerPage(any(), any(), any(), any(), any()))
+                .willReturn(beerServiceNoJpa.beerPage(null, null, false, null, null));
 
         mockMvc.perform(get(BeerController.BEER_PATH)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()", is(1)));
+                .andExpect(jsonPath("$.content.length()", is(3)));
     }
 
     @Rollback
@@ -182,7 +183,8 @@ class BeerControllerTest {
     void createdBeerNullNameTest() throws Exception {
         BeerDTO beerDTO = BeerDTO.builder().build();
 
-        given(beerService.savedNewBeer(any(BeerDTO.class))).willReturn(beerServiceNoJpa.listBeer().get(1));
+        given(beerService.savedNewBeer(any(BeerDTO.class)))
+                .willReturn(beerServiceNoJpa.beerPage(null, null, false, null, null).getContent().get(1));
 
         MvcResult response = mockMvc.perform(post(BeerController.BEER_PATH)
                         .accept(MediaType.APPLICATION_JSON)

@@ -3,14 +3,15 @@ package mvcrest.spring6mvcrest.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mvcrest.spring6mvcrest.model.BeerDTO;
+import mvcrest.spring6mvcrest.model.BeerStyle;
 import mvcrest.spring6mvcrest.service.BeerService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -25,8 +26,12 @@ public class BeerController {
     private final BeerService beerService;
 
     @GetMapping(BEER_PATH)
-    public List<BeerDTO> beerList() {
-        return beerService.listBeer();
+    public Page<BeerDTO> beerPage(@RequestParam(required = false) String beerName,
+                                  @RequestParam(required = false) BeerStyle beerStyle,
+                                  @RequestParam(required = false) Boolean showInventory,
+                                  @RequestParam(required = false) Integer pageNumber,
+                                  @RequestParam(required = false) Integer pageSize) {
+        return beerService.beerPage(beerName, beerStyle, showInventory, pageNumber, pageSize);
     }
 
     @GetMapping(BEER_PATH_ID)
