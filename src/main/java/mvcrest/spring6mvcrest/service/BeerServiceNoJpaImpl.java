@@ -15,7 +15,7 @@ import java.util.*;
 @Slf4j
 @Service
 public class BeerServiceNoJpaImpl implements BeerService {
-    private Map<UUID, BeerDTO> beerMap;
+    private final Map<UUID, BeerDTO> beerMap;
 
     public BeerServiceNoJpaImpl() {
         this.beerMap = new HashMap<>();
