@@ -3,6 +3,7 @@ package mvcrest.spring6mvcrest.repositories;
 import jakarta.transaction.Transactional;
 import mvcrest.spring6mvcrest.entities.Beer;
 import mvcrest.spring6mvcrest.entities.BeerOrder;
+import mvcrest.spring6mvcrest.entities.BeerOrderShipment;
 import mvcrest.spring6mvcrest.entities.Customer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,10 +34,13 @@ class BeerOrderRepositoryTest {
 
     @Transactional
     @Test
-    void beerOrders() {
+    void testBeerOrders() {
         BeerOrder beerOrder = BeerOrder.builder()
                 .customerRef("test ref")
                 .customer(customerTest)
+                .beerOrderShipment(BeerOrderShipment.builder()
+                        .trackingNumber("12345")
+                        .build())
                 .build();
 
         BeerOrder savedBeerOrder = beerOrderRepository.save(beerOrder);

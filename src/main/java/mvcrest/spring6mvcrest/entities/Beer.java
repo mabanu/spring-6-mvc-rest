@@ -14,6 +14,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,14 +34,18 @@ public class Beer {
     @Version
     private Integer version;
 
-    @NotBlank @NotNull @Size( max = 50)
-    @Column( length = 50)
+    @NotBlank
+    @NotNull
+    @Size(max = 50)
+    @Column(length = 50)
     private String beerName;
 
     @NotNull
     private BeerStyle beerStyle;
 
-    @NotBlank @NotNull @Size( max = 50)
+    @NotBlank
+    @NotNull
+    @Size(max = 50)
     private String upc;
     private Integer quantityOnHand;
 
@@ -53,12 +58,24 @@ public class Beer {
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 
-    @OneToMany( mappedBy = "beer")
+    @OneToMany(mappedBy = "beer")
     private Set<BeerOrderLine> beerOrderLines;
 
+    @Builder.Default
     @ManyToMany
-    @JoinTable( name = "beer_category",
-    joinColumns = @JoinColumn( name = "beer_id"),
-    inverseJoinColumns = @JoinColumn( name = "category_id"))
-    private Set<Category> categories;
+    @JoinTable(name = "beer_category",
+            joinColumns = @JoinColumn(name = "beer_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
+    private Set<Category> categories = new HashSet<>();
+
+    public void addCategory(Category category) {
+        this.categories.add(category);
+        category.getBeers().add(this);
+    }
+
+    public void removeCategory(Category category) {
+        this.categories.remove(category);
+        category.getBeers().remove(this);
+    }
+
 }

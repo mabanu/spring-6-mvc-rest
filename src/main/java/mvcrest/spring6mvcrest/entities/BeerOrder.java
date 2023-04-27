@@ -1,7 +1,10 @@
 package mvcrest.spring6mvcrest.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -19,16 +22,6 @@ import java.util.UUID;
 @Builder
 public class BeerOrder {
 
-    public BeerOrder(UUID id, Long version, Timestamp createdDate, Timestamp lastModifiedDate, String customerRef, Customer customer, Set<BeerOrderLine> beerOrderLines) {
-        this.id = id;
-        this.version = version;
-        this.createdDate = createdDate;
-        this.lastModifiedDate = lastModifiedDate;
-        this.customerRef = customerRef;
-        this.setCustomer(customer);
-        this.beerOrderLines = beerOrderLines;
-    }
-
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
@@ -36,33 +29,49 @@ public class BeerOrder {
             strategy = "org.hibernate.id.UUIDGenerator"
     )
     @JdbcTypeCode(SqlTypes.CHAR)
-    @Column( length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
+    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     private UUID id;
 
     @Version
     private Long version;
 
     @CreationTimestamp
-    @Column( updatable = false)
+    @Column(updatable = false)
     private Timestamp createdDate;
 
     @UpdateTimestamp
     private Timestamp lastModifiedDate;
+    private String customerRef;
+    @ManyToOne
+    private Customer customer;
+    @OneToMany(mappedBy = "beerOrder")
+    private Set<BeerOrderLine> beerOrderLines;
+    @OneToOne(cascade = CascadeType.PERSIST)
+    BeerOrderShipment beerOrderShipment;
+
+    public BeerOrder(UUID id, Long version, Timestamp createdDate, Timestamp lastModifiedDate,
+                     String customerRef, Customer customer, Set<BeerOrderLine> beerOrderLines, BeerOrderShipment beerOrderShipment) {
+        this.id = id;
+        this.version = version;
+        this.createdDate = createdDate;
+        this.lastModifiedDate = lastModifiedDate;
+        this.customerRef = customerRef;
+        this.setCustomer(customer);
+        this.beerOrderLines = beerOrderLines;
+        this.setBeerOrderShipment(beerOrderShipment);
+    }
 
     public boolean isNew() {
         return this.id == null;
     }
-
-    private String customerRef;
-
-    @ManyToOne
-    private Customer customer;
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
         customer.getBeerOrders().add(this);
     }
 
-    @OneToMany( mappedBy = "beerOrder")
-    private Set<BeerOrderLine> beerOrderLines;
+    public void setBeerOrderShipment(BeerOrderShipment beerOrderShipment) {
+        this.beerOrderShipment = beerOrderShipment;
+        beerOrderShipment.setBeerOrder(this);
+    }
 }

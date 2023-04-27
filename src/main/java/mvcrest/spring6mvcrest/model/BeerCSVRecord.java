@@ -31,7 +31,7 @@ public class BeerCSVRecord {
     @CsvBindByName
     private String style;
 
-    @CsvBindByName( column = "brewery_id")
+    @CsvBindByName(column = "brewery_id")
     private Integer breweryId;
 
     @CsvBindByName
@@ -40,7 +40,7 @@ public class BeerCSVRecord {
     @CsvBindByName
     private String style2;
 
-    @CsvBindByName( column = "count.y")
+    @CsvBindByName(column = "count.y")
     private String count_y;
 
     @CsvBindByName

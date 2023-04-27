@@ -17,15 +17,18 @@ public class BeerDTO {
     private UUID id;
     private Integer version;
 
-    @NotBlank @NotNull
+    @NotBlank
+    @NotNull
     private String beerName;
     private BeerStyle beerStyle;
     private String upc;
 
-    @NotNull @Positive
+    @NotNull
+    @Positive
     private Integer quantityOnHand;
 
-    @NotNull @Positive
+    @NotNull
+    @Positive
     private BigDecimal price;
 
     @FutureOrPresent

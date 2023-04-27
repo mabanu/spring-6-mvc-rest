@@ -13,18 +13,14 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Builder
-public class BeerOrderLine {
-
+public class BeerOrderShipment {
     @Id
     @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
     private UUID id;
@@ -32,20 +28,18 @@ public class BeerOrderLine {
     @Version
     private Long version;
 
+    @OneToOne
+    private BeerOrder beerOrder;
+
+    private String trackingNumber;
     @CreationTimestamp
     @Column(updatable = false)
     private Timestamp createdDate;
-
     @UpdateTimestamp
     private Timestamp lastModifiedDate;
-    private Integer orderQuantity = 0;
-    private Integer quantityAllocated = 0;
-    @ManyToOne
-    private BeerOrder beerOrder;
-    @ManyToOne
-    private Beer beer;
 
-    public boolean isNew() {
-        return this.id == null;
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }
