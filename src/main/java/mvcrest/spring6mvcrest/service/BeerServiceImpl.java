@@ -110,6 +110,7 @@ public class BeerServiceImpl implements BeerService {
     @Override
     public Optional<BeerDTO> beerUpdate(UUID id, BeerDTO beerDTO) {
 
+
         AtomicReference<Optional<BeerDTO>> atomicReference = new AtomicReference<>();
 
         beerRepository.findById(id).ifPresentOrElse(beerUpdate -> {
@@ -124,6 +125,12 @@ public class BeerServiceImpl implements BeerService {
         }, () -> atomicReference.set(Optional.empty()));
 
         return atomicReference.get();
+
+        /* This logic break the optimistic transaction of hibernate because it is outside of the transaction
+        return Optional.of(beerMapper.beerToBeerDto(
+                beerRepository.save(beerMapper.beerDtoToBeer(beerDTO))
+        ));
+         */
     }
 
     @Override
